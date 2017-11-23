@@ -317,7 +317,3 @@
     - 解释：首先我们新建了一个assets目录来存储打包的JavaScript文件然后通过curl从ReactNative包管理器中获取JavaScript文件。最后使用gradlew来构建release版本的APK
 
     - `在根路径下面DemoProject/android/app/build/outputs/apk 目录下面`
-
-## Github Native
-1. yarn add react-native-scrollable-tab-view
-   yarn add react-native-tab-navigator

@@ -27,14 +27,15 @@ export default class PopularPage extends Component {
         <NavigationBar
           title={'最热'}
           style={{backgroundColor:'#2196F3'}}
-          statusBar={{backgroundColor:'rgb(234,32,0)'}}
+          statusBar={{backgroundColor:'#2196F3'}}
         />
         <ScrollableTabView
           renderTabBar={()=> <ScrollableTabBar/>}
+          initialPage={0}
           tabBarBackgroundColor="#2196F3"
           tabBarInactiveTextColor="mintcream"
           tabBarActiveTextColor="white"
-          tabbarUnderlineStyle={{backgroundColor: '#e7e7e7', height: 2}}
+          tabBarUnderlineStyle={{backgroundColor: '#e7e7e7', height: 2}}
         >
           <PopularTab tabLabel="Java">JAVA</PopularTab>
           <PopularTab tabLabel="iOS">iOS</PopularTab>
@@ -63,7 +64,8 @@ class PopularTab extends Component {
     this.dataRepository = new DataRepository()
     this.state = {
       text: '',
-      dataSource: []
+      dataSource: [],
+      isLoading:false
     }
   }
   genUrl(key) {
@@ -73,11 +75,12 @@ class PopularTab extends Component {
     this.loadData()
   }
   loadData() {
+    this.setState({isLoading:true})
     let url = this.genUrl(this.props.tabLabel);
     this.dataRepository.fetchPopularRepository(url).then(result=> {
       console.log(result)
       console.log(url)
-      this.setState({dataSource: result.items})
+      this.setState({dataSource: result.items, isLoading:false})
     }).catch(error=> alert(error.message))
   }
   _renderItem({item, index}) {
@@ -97,14 +100,24 @@ class PopularTab extends Component {
   _keyExtractor(item, index) {
     return item.id;
   }
+  _onRefresh() {
+    //alert('下拉刷新')
+    this.setState({isLoading: true})
+    this.loadData()
+  }
   render() {
     return (
-      <View>
+      <View style={{flex:1}}>
         {/*<Text>{this.state.result}</Text>*/}
         <FlatList
           data={this.state.dataSource}
           renderItem={this._renderItem.bind(this)}
           keyExtractor={this._keyExtractor.bind(this)}
+          onRefresh={this._onRefresh.bind(this)}
+          refreshing={this.state.isLoading}
+          colors={['#2196F3']}
+          title={'Loading...'}
+          titleColor={'#2196F3'}
         />
       </View>
     )

@@ -56,10 +56,10 @@ export default class App extends Component<> {
           <TabNavigator.Item
             selected={this.state.selectedTab === 'tb_popular'}
             title="最热"
-            selectedTitleStyle={{color:'red'}}
+            selectedTitleStyle={{color:'#2196F3'}}
             renderIcon={() => <Image source={require('./res/images/ic_popular.png')} style={styles.image} />}
-            renderSelectedIcon={() => <Image source={require('./res/images/ic_popular.png')} style={[styles.image, {tintColor: 'red'}]} />}
-            badgeText="1"
+            renderSelectedIcon={() => <Image source={require('./res/images/ic_popular.png')} style={[styles.image, {tintColor: '#2196F3'}]} />}
+            badgeText=""
             onPress={() => this.setState({ selectedTab: 'tb_popular' })}>
             <RootNavigator />
           </TabNavigator.Item>
