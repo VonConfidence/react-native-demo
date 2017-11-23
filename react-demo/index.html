@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>React Demo</title>
+    <!--react核心库-->
+    <script src="./node_modules/react/umd/react.development.js"></script>
+    <!--提供DOM的相关功能-->
+    <script src="./node_modules/react-dom/umd/react-dom.development.js"></script>
+    <!--将jsx语法转换成为JavaScript语法-->
+    <script src="https://cdn.bootcss.com/babel-core/6.1.19/browser.min.js"></script>
+</head>
+<body>
+<!--react渲染的模板内容会插入到这个DOM节点中 作为一个容器-->
+<div id="container">
+
+</div>
+<!--在react开发中, 使用jsx, 根javascript不兼容, 在使用jsx的地方, 要设置type:text/babel-->
+<!--babel转换器, ES6转成可以在浏览器中运行的代码-->
+<script type="text/babel">
+    // 此处编写react代码
+</script>
+</body>
+</html>

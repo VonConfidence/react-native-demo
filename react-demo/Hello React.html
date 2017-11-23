@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>React Demo</title>
+    <!--react核心库-->
+    <script src="./node_modules/react/umd/react.development.js"></script>
+    <!--提供DOM的相关功能-->
+    <script src="./node_modules/react-dom/umd/react-dom.development.js"></script>
+
+    <script src="./node_modules/prop-types/prop-types.js"></script>
+
+    <!--将jsx语法转换成为JavaScript语法  使浏览器能够识别ES6语法-->
+    <script src="https://cdn.bootcss.com/babel-core/5.8.24/browser.min.js"></script>
+    <style>
+        .pStyle {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+<!--react渲染的模板内容会插入到这个DOM节点中 作为一个容器-->
+<div id="container">
+
+</div>
+<!--在react开发中, 使用jsx, 根javascript不兼容, 在使用jsx的地方, 要设置type:text/babel-->
+<!--babel转换器, ES6转成可以在浏览器中运行的代码-->
+<script type="text/babel">
+  // 此处编写react代码
+
+  /*
+  * 创建一个组件类
+  *     1. 在React中创建的组件类 以大写字母开头, 驼峰命名法
+  *     2. 在React中使用React.createClass方法创建一个组件类
+  *     3. 核心代码: 每一个组件类都必须实现自己的render方法. 输出定义好的组件模板: 返回值: null, undefined, 组建模板
+  *     4. 注意: 组件类只能包含一个顶层标签
+  * */
+  class HelloPage extends React.Component {
+    render() {
+      return <h1>Hello, {this.props.name}</h1>;
+    }
+  }
+
+  /**
+   * 组件的样式
+   *    1. 内联延时
+   *    2. 对象样式
+   *    3. 选择器样式
+   *
+   *    注意: 在React和HTML5中设置样式的区别:
+   *        - H5以;结尾 React以,结尾
+   *        - H5中的key,value都不加引号 React中属于JavaScript对象,key的名字不能出现'-'需使用驼峰式命名法, value字符串加引号
+   *        - 在H5中,value是数字的话要带单位, React中不需要
+   */
+
+    // 创建对象样式
+  const hStyle = {
+      backgroundColor: 'green',
+      color: 'red'
+    };
+
+  class ShowMessage extends React.Component {
+    render() {
+      return (
+        /*
+           style={{}} 第一个大括号JSX语法解析 第二个大括号: 表示是一个对象
+        */
+              <div style={{
+                backgroundColor: 'yellow',
+                color: 'white',
+                borderWidth: 1,
+                borderColor: 'dodgerblue',
+                borderStyle: 'solid'
+              }}>
+                  <h1 style={hStyle}>{this.props.firstRow}</h1>
+                  <p className="pStyle">{this.props.secondRow}</p>
+              </div>
+      );
+    }
+  }
+
+  /**
+   * 复合组件
+   *   也称为组合组件, 创建多个组件合成一个组件
+   **/
+  class WebName extends React.Component {
+    render() {
+      return (<h1>{this.props.webname}</h1>)
+    }
+  }
+
+  class WebTitle extends React.Component {
+    render() {
+      return (<a href={this.props.webtitle}>Google</a>)
+    }
+  }
+
+  class WebShow extends React.Component {
+    render() {
+      return (
+              <div>
+                  <WebName webname={this.props.wname}/>
+                  <WebTitle webtitle={this.props.wtitle}/>
+              </div>)
+    }
+  }
+
+  /*
+   * props & state
+   *    porps是组件自身的属性, 一般用于嵌套的内外层组件中, 负责传递信息(通常由父层组件向子层组件传递)
+   *        注意: props对象中的属性与组件属性一一对应, 不要直接去修改props中属性的值
+   *
+   *    ...props 语法糖,  可以将父组件中的全部属性, 全部复制给子组件中
+   *        <ChildrenComponent {...this.props} myprop='自定义属性' />
+   *        <a {...this.props} myprop='自定义属性' />
+   *
+   *    this.props.children
+   *        children是一个例外, 不是跟组件的属性对应的, children表示组件的所有子节点
+   *
+  */
+
+  class ListComponent extends React.Component {
+    render() {
+      return (
+              <ul>
+                {
+                  /*
+                  * 列表项数量以及内容不确定, 在创建模板的时候才能确定
+                  * 利用this.props.children从父组件中获取需要展示的列表项内容
+                  *   获取列表项内容后, 需要遍历children, 逐项进行设置
+                  *   使用React.Children.map
+                  *   返回值: 数组对象, 在这里设置元素 <li>
+                  * 相当于Vue的插槽, 获取父组件中所有的slot
+                  * */
+                  React.Children.map(this.props.children, child => {
+                    // child 是遍历到的子节点
+                    return <li>{child}</li>
+                  })
+                }
+              </ul>)
+    }
+  }
+
+  /**
+   * 属性验证PropTypes
+   *    组件类的属性: http://css88.com/react/docs/typechecking-with-proptypes.html
+   *    */
+  class ShowModalComponent extends React.Component {
+    render() {
+      return (<h1>{this.props.title}</h1>)
+    }
+  }
+
+  // 属性类型校验
+  ShowModalComponent.propTypes = {
+    title: PropTypes.string.isRequired
+  };
+
+  // 属性默认值
+  ShowModalComponent.defaultProps = {
+    title: 'the default value'
+  };
+
+
+  /**
+   * 事件处理
+   *    react中的事件名称, 首字母小写, 驼峰式命名法
+   */
+  var MyButton = function (props) {
+    function handleClick() {
+      alert('点击按钮触发')
+    }
+
+    return (<button onClick={handleClick}>props.buttonTitle</button>)
+  }
+
+  /**
+   * state 状态
+   *    组件自身属性
+   *    当state发生变化的时候, 会调用组件内部的render方法
+   * */
+  class Clock extends React.Component {
+    constructor(props) {
+      super(props);
+      this.state = {date: new Date(), checked: false};
+    }
+
+    handleChange() {
+      this.setState({checked: !this.state.checked});
+    }
+
+    render() {
+      var text = this.state.checked ? 'Hello checked is true' : 'checked is false';
+      return (
+              <div>
+                  <h1 onClick={this.handleChange.bind(this)}>{text}</h1>
+                  <h2>It is {this.state.date.toLocaleTimeString()}.</h2>
+              </div>
+      );
+    }
+  }
+
+  class MyInput extends React.Component {
+    constructor(props) {
+      super(props)
+      this.state = {
+        value: '请输入数据'
+      }
+    }
+
+    handleChange(event) {
+      this.setState({value: event.target.value})
+    }
+
+    render() {
+      var value = this.state.value;
+      return (
+              <div>
+                  <input type="text" value={value} onChange={this.handleChange.bind(this)}/>
+                  <p>{value}</p>
+              </div>
+      );
+    }
+  }
+
+  /**
+   * 组件的生命周期
+   *    Mounting: 组件挂载, 已经插入真实的DOM
+   *    Updating: 组件更新, 正在被重新渲染
+   *    Unmounting: 组件移除, 已经移出真实DOM
+   */
+  class LifeCircle extends React.Component {
+    /**
+     *  一, 创建阶段
+     *      流程:
+     *          只调用getDefaultProps方法
+     */
+    getDefaultProps() {
+      console.log('1, getDefaultProps')
+      return {};
+    }
+
+    /**
+     * 二, 实例化阶段
+     *  流程:
+     *      getInitialState
+     *      componentWillMount
+     *      render
+     *      componentDidMount
+     */
+    getInitialState() {
+      // 设置this.state的默认值
+      console.log('2, getInitialState')
+      return null;
+    }
+
+    componentWillMount() {
+      // 在render之前调用
+      console.log('3, componentWillMount')
+    }
+
+    render() {
+      // 渲染组件
+      console.log('4, render')
+      return (
+        <div>声明周期</div>
+      )
+    }
+
+    componentDidMount() {
+      // 组件已经挂载, 该方法中React会使用render方法返回的虚拟DOM对象创建真实的DOM结构, 可以在该方法中读取DOM节点
+      console.log('5, componentDidMount')
+    }
+
+    /**
+     * 三, 更新阶段Updating
+     *  流程:
+     *      componentWillReceiveProps
+     *      shouldComponentUpdate 如果返回值是false, 后面的方法不会执行
+     *      componentWillUpdate
+     *      render
+     *      componentDidUpdate
+     */
+
+    componentWillReceiveProps(nextProps) {
+      console.log('update componentWillReceiveProps')
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+      console.log('update shouldComponentUpdate')
+      return true; //如果返回false  下面两个方法将不会执行
+    }
+
+    // render方法 在上面已经实现
+
+    componentWillUpdate(nextProps, nextState) {
+      console.log('update componentWillUpdate')
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+      console.log('update componentDidUpdate')
+    }
+
+    /**
+     * 销毁阶段
+     *  流程:
+     *      componentWillUnmount
+     */
+    componentWillUnmount() {
+      console.log('Unmount  componentWillUnmount')
+    }
+
+    constructor(props) {
+      super(props);
+      this.state = {}
+      console.log('constructor ....');
+    }
+  }
+
+  /**
+   *  ReactDOM.render(): 基本方法, 用户将模板转换成为HTML语言, 渲染DOM, 并且插入到指定的DOM中
+   *  3个参数
+   *    模板的渲染内容
+   *    模板需要插入的内容(selector)
+   *    渲染之后的回调函数(一般不会用到)
+   */
+  ReactDOM.render(
+          <div>
+              <h1>hello React</h1>
+              <HelloPage name="page-hello"/>
+              <ShowMessage firstRow="你好" secondRow="React"/>
+              <hr/>
+              <WebShow wname="Google China" wtitle="https://www.baidu.com"/>
+              <hr/>
+              <ListComponent>
+                  <h1>列表标题</h1>
+                  <a href="https://www.baidu.com">Google</a>
+                  <a href="https://www.awesomes.cn">Awesomes</a>
+              </ListComponent>
+              <hr/>
+              <ShowModalComponent title={123}/>
+              <ShowModalComponent/>
+              <hr/>
+              <MyButton buttonTitle="我是一个按钮"/>
+              <Clock/>
+              <MyInput/>
+
+              <hr/>
+              <LifeCircle/>
+          </div>,
+    document.getElementById('container')
+  );
+</script>
+</body>
+</html>
