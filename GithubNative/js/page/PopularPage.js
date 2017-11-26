@@ -7,11 +7,13 @@ import {
   Image,
   StyleSheet,
   TextInput,
-  FlatList
+  FlatList,
 } from 'react-native'
 
 import NavigationBar from '../common/NavigationBar'
 import DataRepository from '../expand/dao/DataRepository'
+
+import LanguageDao, {FLAG_LANGUAGE} from '../expand/dao/LanguageDao'
 
 import ScrollableTabView, {ScrollableTabBar} from 'react-native-scrollable-tab-view'
 
@@ -21,7 +23,46 @@ const URL = 'https://api.github.com/search/repositories?q=';
 const QUERY_STR = '&sort=stars';
 
 export default class PopularPage extends Component {
+  constructor(props) {
+    super(props)
+    this.languageDao = new LanguageDao(FLAG_LANGUAGE.flag_key);
+    this.state = {
+      languages: []
+    }
+  }
+  componentDidMount() {
+    this._loadData()
+  }
+  _loadData() {
+    this.languageDao.fetch().then(result=> {
+      this.setState({
+        languages: result
+      })
+    }).catch(error=> {
+      console.log(error.message)
+    })
+  }
   render() {
+    let content= this.state.languages.length > 0?
+    (
+      <ScrollableTabView
+        renderTabBar={()=> <ScrollableTabBar/>}
+        initialPage={0}
+        tabBarBackgroundColor="#2196F3"
+        tabBarInactiveTextColor="mintcream"
+        tabBarActiveTextColor="white"
+        tabBarUnderlineStyle={{backgroundColor: '#e7e7e7', height: 2}}
+      >
+        {this.state.languages.map((result, index, arr)=> {
+          let language = arr[index]
+          return language.checked ? <PopularTab tabLabel={language.name} key={language.path+index}>{language.name}</PopularTab> : null;
+        })}
+        {/*<PopularTab tabLabel="Java">JAVA</PopularTab>*/}
+        {/*<PopularTab tabLabel="iOS">iOS</PopularTab>*/}
+        {/*<PopularTab tabLabel="JavaScript">JavaScript</PopularTab>*/}
+        {/*<PopularTab tabLabel="Python">Python</PopularTab>*/}
+      </ScrollableTabView>
+    ): null;
     return (
       <View style={styles.container}>
         <NavigationBar
@@ -29,27 +70,15 @@ export default class PopularPage extends Component {
           style={{backgroundColor:'#2196F3'}}
           statusBar={{backgroundColor:'#2196F3'}}
         />
-        <ScrollableTabView
-          renderTabBar={()=> <ScrollableTabBar/>}
-          initialPage={0}
-          tabBarBackgroundColor="#2196F3"
-          tabBarInactiveTextColor="mintcream"
-          tabBarActiveTextColor="white"
-          tabBarUnderlineStyle={{backgroundColor: '#e7e7e7', height: 2}}
-        >
-          <PopularTab tabLabel="Java">JAVA</PopularTab>
-          <PopularTab tabLabel="iOS">iOS</PopularTab>
-          <PopularTab tabLabel="JavaScript">JavaScript</PopularTab>
-          <PopularTab tabLabel="Python">Python</PopularTab>
-        </ScrollableTabView>
+        {content}
         {/*<TouchableOpacity*/}
-          {/*style={{borderWidth:1, backgroundColor:'blue', flexDirection: 'row', justifyContent:'center', width: 150}}*/}
-          {/*onPress={() => this.onLoad()} >*/}
-          {/*<Text style={{color:'white'}}>获取数据</Text>*/}
+        {/*style={{borderWidth:1, backgroundColor:'blue', flexDirection: 'row', justifyContent:'center', width: 150}}*/}
+        {/*onPress={() => this.onLoad()} >*/}
+        {/*<Text style={{color:'white'}}>获取数据</Text>*/}
         {/*</TouchableOpacity>*/}
         {/*<TextInput*/}
-          {/*style={{height: 30, borderWidth: 1}}*/}
-          {/*onChangeText={text=> this.setState({text})}*/}
+        {/*style={{height: 30, borderWidth: 1}}*/}
+        {/*onChangeText={text=> this.setState({text})}*/}
         {/*/>*/}
         {/*<Text>{JSON.stringify(this.state.result)}</Text>*/}
       </View>

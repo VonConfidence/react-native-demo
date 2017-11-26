@@ -34,7 +34,7 @@ export default class NavigationBar extends Component<> {
   render() {
     // 状态栏
     let status = <View style={[styles.statusBar, this.props.statusBar ]}>
-      <StatusBar {...this.props.statusBar}/>
+      <StatusBar style={[{barStyle:'line-content', hidden:false},this.props.statusBar]}/>
     </View>
 
     let titleView = this.props.titleView ? this.props.titleView : <Text style={styles.title}>{this.props.title}</Text>
@@ -98,10 +98,10 @@ NavigationBar.propTypes = {
 };
 
 // 属性默认值
-NavigationBar.defaultProps = {
-  statusBar: {
-    barStyle: 'light-content',
-    hidden: false,
-  }
-};
+// NavigationBar.defaultProps = {
+//   statusBar: {
+//       barStyle: 'light-content',
+//       hidden: false
+//   }
+// };
 

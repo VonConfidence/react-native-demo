@@ -35,13 +35,13 @@
 8. NativeModules 原生模块
 9. Android&iOS
 10. 第三方库的使用
-    - react-native-check-box
+    - [react-native-check-box](https://github.com/crazycodeboy/react-native-check-box)
     - react-native-easy-toast  (toast提示框)
     - react-native-splash-screen (启动屏)
     - react-native-htmlview (html渲染)
     - [react-native-scrollable-tab-view](https://github.com/skv-headless/react-native-scrollable-tab-view) (标签切换)
-    - reat-native-sortable-listview (列表排序)
-    - react-native-tab-navigator(底部导航)
+    - reat-native-sortable-listview [列表排序](https://github.com/mozillo/react-native-sortable-listview)
+    - react-native-tab-navigator(底部导航)(https://github.com/happypancake/react-native-tab-navigator)
     - react-native-parallax-scroll-view(视差滚动)
     - 分享SDK
 11. 自定义组件
@@ -79,3 +79,24 @@
     - setup.js 相关组件以及服务初始化
     - welcomePage 欢迎轮播图
     - homePage
+
+## Async Storage
+1. 简单的异步的, 持久化的key-value存储系统
+2. 使用方法
+    ```es6
+    import Toast, {DURATION} from 'react-native-easy-toast
+    AsyncStorage.setItem('key', this.text, (error=> {}))
+    AsyncStorage.getItem('')
+    AsyncStorage.setItem('')
+
+    <Toast ref={toast=> this.toast = toast}/>
+
+    this.toast.show('取出数据为' + result, DURATION.LENGTH_LONG)
+    ```
+
+## Popular 页面标签加载流程
+1. App进入首页-> 读取用户已经订阅的表现-> 获取标签下内容->加载数据
+2. 自定义标签页
+    - 进入标签页
+    - 从数据库中读取标签
+    - 保存时, 如果有变动->刷新popular页面

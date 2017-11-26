@@ -19,7 +19,11 @@ import { StackNavigator } from 'react-navigation';
 
 import BoyComponent from './js/common/Boy'
 import GirlComponent from './js/common/Girl'
-import PopularPage from "./js/page/PopularPage";
+import AsyncPage from './js/common/AsyncPage'
+
+import PopularPage from "./js/page/PopularPage"
+
+import MyPage from './js/page/My/MyPage'
 
 const RootNavigator = StackNavigator({
   PopularPage: {
@@ -71,7 +75,9 @@ export default class App extends Component<> {
             renderIcon={() => <Image source={require('./res/images/ic_trending.png')} style={styles.image} />}
             renderSelectedIcon={() => <Image source={require('./res/images/ic_trending.png')} style={[styles.image, {tintColor: 'red'}]} />}
             onPress={() => this.setState({ selectedTab: 'tb_trending' })}>
-            <View style={styles.page2}></View>
+            <View style={styles.page2}>
+              <AsyncPage />
+            </View>
           </TabNavigator.Item>
 
           <TabNavigator.Item
@@ -91,7 +97,7 @@ export default class App extends Component<> {
             renderIcon={() => <Image source={require('./res/images/ic_my.png')} style={styles.image} />}
             renderSelectedIcon={() => <Image source={require('./res/images/ic_my.png')} style={[styles.image, {tintColor: 'red'}]} />}
             onPress={() => this.setState({ selectedTab: 'tb_my' })}>
-            <View style={styles.page4}></View>
+            <MyPage/>
           </TabNavigator.Item>
         </TabNavigator>
       </View>
