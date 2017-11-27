@@ -25,7 +25,8 @@ export default class CustomKeyPage extends Component {
     super(props)
     this.languageDao = new LanguageDao(FLAG_LANGUAGE.flag_key)
     this.changeValues = []; // 保存用户所做的修改
-    this.isRemoveKey = this.props.isRemoveKey?true:false
+    console.log(this.props.navigation)
+    this.isRemoveKey = this.props.navigation.state.params.isRemoveKey?true:false
     this.state = {
       dataArray: [],
     }
@@ -53,9 +54,16 @@ export default class CustomKeyPage extends Component {
       this.props.navigation.goBack();
       return;
     }
-    for (let i = 0, l = this.changeValues.length; i < len; i ++) {
-      ArrayUtils.remove(this.state.dataArray, this.changeValues[i]);
+
+    // 如果是移除键值的话
+    if (this.isRemoveKey) {
+      // 遍历所有发生变化的标签  (移除自己已经订阅的标签)
+      for (let i = 0, len = this.changeValues.length; i < len; i ++) {
+        // 将其从数据库中移除, 从state.dataArray中移除 changeValues[i]
+        ArrayUtils.remove(this.state.dataArray, this.changeValues[i]);
+      }
     }
+
     // 用户做了修改, 需要保存到数据库中
     this.languageDao.save(this.state.dataArray);
     this.props.navigation.goBack();
@@ -74,7 +82,7 @@ export default class CustomKeyPage extends Component {
   }
 
   _onCheckBoxClick(data) {
-    // 如果是 标签订阅显示
+    // 如果是 标签订阅页面  才修改数据的订阅状态
     if(!this.isRemoveKey) data.checked = !data.checked;
 
     //  存在即删除 不存在即添加
@@ -100,7 +108,7 @@ export default class CustomKeyPage extends Component {
         style={{flex:1, padding : 10}}
         onClick={()=>this._onCheckBoxClick(data)}
         leftText={leftText}
-        isChecked={data.checked}
+        isChecked={this.isRemoveKey?false:data.checked}
         checkedImage={<Image source={require('./images/ic_check_box.png')} style={{tintColor: '#6495ED'}}  />}
         unCheckedImage={<Image source={require('./images/ic_check_box_outline_blank.png')} style={{tintColor: '#6495ED'}} />  }
       />

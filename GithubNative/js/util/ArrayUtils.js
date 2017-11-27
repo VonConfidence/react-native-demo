@@ -46,4 +46,21 @@ export default class ArrayUtils {
     }
     return true;
   }
+
+  /**
+   * 从数组arr中移除item项
+   * @param arr?Array
+   * @param item?
+   */
+  static remove(arr, item){
+    if (!arr) {
+      return ;
+    }
+    for(let i = 0; i < arr.length; i ++) {
+      if (item === arr[i]) {
+        arr.splice(i, 1)
+      }
+    }
+  }
+
 }

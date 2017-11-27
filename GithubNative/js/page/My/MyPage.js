@@ -31,7 +31,7 @@ class MyPage extends Component {
           style={{backgroundColor: "#6495ED"}}
         />
         <Text style={styles.tips}
-          onPress={()=> navigate('CustomKeyPage')}
+          onPress={()=> navigate('CustomKeyPage', {isRemoveKey:false})}
           >自定义标签
         </Text>
 

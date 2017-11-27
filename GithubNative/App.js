@@ -11,23 +11,37 @@ import {
   Text,
   View,
   Image,
+  DeviceEventEmitter
 } from 'react-native';
+
+import Toast, {DURATION} from 'react-native-easy-toast'
 
 import TabNavigator from 'react-native-tab-navigator';
 
 import { StackNavigator } from 'react-navigation';
 
-import BoyComponent from './js/common/Boy'
-import GirlComponent from './js/common/Girl'
-import AsyncPage from './js/common/AsyncPage'
-
 import PopularPage from "./js/page/PopularPage"
 
 import MyPage from './js/page/My/MyPage'
 
+import RepositoryDetail from "./js/page/RepositoryDetail";
+
+// Test Page
+import BoyComponent from './js/common/Boy'
+import GirlComponent from './js/common/Girl'
+import WebViewTest from './js/common/WebViewTest'
+import AsyncPage from './js/common/AsyncPage'
+
+
 const RootNavigator = StackNavigator({
   PopularPage: {
     screen: PopularPage,
+    navigationOptions: {
+      header: null
+    }
+  },
+  RepositoryDetail: {
+    screen: RepositoryDetail,
     navigationOptions: {
       header: null
     }
@@ -52,6 +66,16 @@ export default class App extends Component<> {
     this.state = {
       selectedTab: 'tb_popular'
     }
+  }
+  componentDidMount() {
+    // 注册一个事件通知
+    this.listener = DeviceEventEmitter.addListener('showToast', (text)=> {
+      this.toast.show(text, DURATION.LENGTH_LONG)
+    })
+  }
+  componentWillMount() {
+    // 在组件移除的时候  移除掉全局事件监听
+    this.listener && this.listener.remove()
   }
   render() {
     return (
@@ -87,7 +111,7 @@ export default class App extends Component<> {
             renderIcon={() => <Image source={require('./res/images/ic_favorite.png')} style={styles.image} />}
             renderSelectedIcon={() => <Image source={require('./res/images/ic_favorite.png')} style={[styles.image, {tintColor: 'red'}]} />}
             onPress={() => this.setState({ selectedTab: 'tb_favorite' })}>
-            <View style={styles.page3}></View>
+            <WebViewTest/>
           </TabNavigator.Item>
 
           <TabNavigator.Item
@@ -100,6 +124,7 @@ export default class App extends Component<> {
             <MyPage/>
           </TabNavigator.Item>
         </TabNavigator>
+        <Toast ref={toast=> this.toast = toast}/>
       </View>
     );
   }
