@@ -39,7 +39,7 @@ class SortKeyPage extends Component {
   }
 
   componentDidMount() {
-    this.languageDao = new LanguageDao(FLAG_LANGUAGE.flag_key)
+    this.languageDao = new LanguageDao(this.props.navigation.state.params.flag)
     this._loadData();
   }
 
@@ -102,10 +102,12 @@ class SortKeyPage extends Component {
         <Text style={styles.title}>保存</Text>
       </View>
     </TouchableOpacity>
+
+    let title = this.props.navigation.state.params.flag===FLAG_LANGUAGE.flag_language? '语言排序':'标签排序'
     return (
       <View style={styles.container}>
         <NavigationBar
-          title={"标签页"}
+          title={title}
           style={{backgroundColor: "#6495ED"}}
           leftButton={ViewUtils.getLeftButton(()=> this._onBack())}
           rightButton={rightButton}

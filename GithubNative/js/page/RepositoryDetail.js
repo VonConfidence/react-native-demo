@@ -16,11 +16,14 @@ import {
 import NavigationBar from '../common/NavigationBar'
 import ViewUtils from "../util/ViewUtils";
 
+const TRENDING_URL = 'https://github.com/'
+
 export default class RepositoryDetail extends Component<> {
   constructor(props) {
     super(props);
-    this.url = this.props.navigation.state.params.item.html_url
-    this.title = this.props.navigation.state.params.item.full_name;
+    // 适配popularPage 和 trendingPage
+    this.url = this.props.navigation.state.params.item.html_url?this.props.navigation.state.params.item.html_url:TRENDING_URL+ this.props.navigation.state.params.item.fullName;
+    this.title = this.props.navigation.state.params.item.full_name ? this.props.navigation.state.params.item.full_name : this.props.navigation.state.params.item.fullName;
     this.state = {
       url: this.url,
       title: this.title,

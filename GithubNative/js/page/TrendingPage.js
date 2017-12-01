@@ -11,27 +11,40 @@ import {
   DeviceEventEmitter
 } from 'react-native'
 
-import { StackNavigator } from 'react-navigation';
-import ScrollableTabView, {ScrollableTabBar} from 'react-native-scrollable-tab-view'
+import {StackNavigator} from 'react-navigation'
 
-// component
-import RepositoryCell from '../common/RepositoryCell'
-import RepositoryDetail from "./RepositoryDetail";
+import ScrollableTabView, {ScrollableTabBar} from 'react-native-scrollable-tab-view'
 
 import NavigationBar from '../common/NavigationBar'
 import DataRepository, {FLAG_STORAGE} from '../expand/dao/DataRepository'
-
 import LanguageDao, {FLAG_LANGUAGE} from '../expand/dao/LanguageDao'
+import TrendingCell from '../common/TrendingCell'
+import RepositoryDetail from './RepositoryDetail'
 
-const URL = 'https://api.github.com/search/repositories?q=';
-const QUERY_STR = '&sort=stars';
+import TimeSpan from '../model/TimeSpan'
 
-class PopularPage extends Component {
+import Popover from '../common/Popover'
+
+const API_URL = 'https://github.com/trending/';
+
+let timeSpanTextArray = [
+  new TimeSpan('今 天', 'since=daily'),
+  new TimeSpan('本 周', 'since=weekly'),
+  new TimeSpan('本 月', 'since=monthly')
+]
+
+class TrendingPage extends Component {
   constructor(props) {
     super(props)
-    this.languageDao = new LanguageDao(FLAG_LANGUAGE.flag_key);
+    // 读取本地默认配置的语言
+    this.languageDao = new LanguageDao(FLAG_LANGUAGE.flag_language);
     this.state = {
-      languages: []
+      languages: [],
+
+      isVisible: false,
+      buttonRect:{},
+
+      timeSpan: timeSpanTextArray[0]
     }
   }
 
@@ -48,7 +61,33 @@ class PopularPage extends Component {
       console.log(error.message)
     })
   }
-
+  _showPopover() {
+    this.refs.button.measure((ox, oy, width, height, px, py) => {
+      this.setState({
+        isVisible: true,
+        buttonRect: {x: px, y: py, width: width, height: height}
+      });
+    });
+  }
+  _closePopover() {
+    this.setState({isVisible: false});
+  }
+  _renderTitleView() {
+    return <View>
+      <TouchableOpacity ref="button" onPress={()=> this._showPopover()} style={styles.button}>
+        <View style={{flexDirection: 'row', alignItems:'center'}}>
+          <Text style={{fontSize: 18, color:'white', fontWeight: '400'}}>趋势</Text>
+          <Image source={require('../../res/images/ic_spinner_triangle.png')} style={{width: 12, height: 12, marginLeft: 5}}/>
+        </View>
+      </TouchableOpacity>
+    </View>
+  }
+  _onSelectTimeSpan(timeSpan) {
+    this.setState({
+      timeSpan,
+      isVisible: false
+    })
+  }
   render() {
     let content = this.state.languages.length > 0 ?
       (
@@ -63,22 +102,38 @@ class PopularPage extends Component {
           {this.state.languages.map((result, index, arr) => {
             let language = arr[index]
             return language.checked ?
-              <PopularTab tabLabel={language.name} key={language.path + index} {...this.props}>{language.name}</PopularTab> : null;
+              <TrendingTab tabLabel={language.name} key={index} {...this.props} timeSpan={this.state.timeSpan}>{language.name}</TrendingTab> : null;
           })}
-          {/*<PopularTab tabLabel="Java">JAVA</PopularTab>*/}
-          {/*<PopularTab tabLabel="iOS">iOS</PopularTab>*/}
-          {/*<PopularTab tabLabel="JavaScript">JavaScript</PopularTab>*/}
-          {/*<PopularTab tabLabel="Python">Python</PopularTab>*/}
+          {/*<TrendingTab tabLabel="Java">JAVA</TrendingTab>*/}
+          {/*<TrendingTab tabLabel="iOS">iOS</TrendingTab>*/}
+          {/*<TrendingTab tabLabel="JavaScript">JavaScript</TrendingTab>*/}
+          {/*<TrendingTab tabLabel="Python">Python</TrendingTab>*/}
         </ScrollableTabView>
       ) : null;
+
+    let timeSpanView = (
+      <Popover
+        isVisible={this.state.isVisible}
+        fromRect={this.state.buttonRect}
+        onClose={this._closePopover.bind(this)}
+        placement="bottom"
+        contentStyle={{backgroundColor: '#343434', opacity: 0.82}}
+      >
+        {timeSpanTextArray.map((item, index)=> {
+          return <TouchableOpacity key={index} underlayColor='transparent' onPress={this._onSelectTimeSpan.bind(this, item)}>
+            <Text style={{fontSize: 18, color: 'white', fontWeight: '400', padding: 8}}>{item.showText}</Text>
+          </TouchableOpacity>
+        })}
+    </Popover>)
     return (
       <View style={styles.container}>
         <NavigationBar
-          title={'最热'}
+          titleView={this._renderTitleView()}
           style={{backgroundColor: '#2196F3'}}
           statusBar={{backgroundColor: '#2196F3'}}
         />
         {content}
+        {timeSpanView}
         {/*<TouchableOpacity*/}
         {/*style={{borderWidth:1, backgroundColor:'blue', flexDirection: 'row', justifyContent:'center', width: 150}}*/}
         {/*onPress={() => this.onLoad()} >*/}
@@ -95,28 +150,45 @@ class PopularPage extends Component {
 }
 
 
-class PopularTab extends Component {
+class TrendingTab extends Component {
   constructor(props) {
     super(props)
-    this.dataRepository = new DataRepository(FLAG_STORAGE.flag_popular)
+    // 从trending模块下面读取数据
+    this.dataRepository = new DataRepository(FLAG_STORAGE.flag_trending)
     this.state = {
       text: '',
       dataSource: [],
       isLoading: false
     }
   }
-
-  genFetchUrl(key) {
-    return URL + encodeURIComponent(key) + QUERY_STR;
+  updateState(dic) {
+    if (!this) return;
+    this.setState(dic);
+  }
+  genFetchUrl(timeSpan, category) {
+    return API_URL + encodeURIComponent(category) + '/?'+timeSpan.searchText;
   }
 
   componentDidMount() {
-    this.loadData()
+    this.loadData(this.props.timeSpan, true)
   }
 
-  loadData() {
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.timeSpan !== this.props.timeSpan) {
+      this.loadData(nextProps.timeSpan, true)
+    }
+  }
+
+  _onRefresh() {
+    //alert('下拉刷新')
     this.setState({isLoading: true})
-    let url = this.genFetchUrl(this.props.tabLabel);
+    this.loadData(this.props.timeSpan, true)
+  }
+
+  loadData(timeSpan, isRefresh) {
+    this.updateState({isLoading: true})
+    let url = this.genFetchUrl(timeSpan,this.props.tabLabel);
+    // alert(url);
     this.dataRepository.fetchRepository(url).then(result => {
       console.log('result', result) //  网络数据: result.items  本地数据result
       // console.log(url)
@@ -135,18 +207,23 @@ class PopularTab extends Component {
       } else {
         DeviceEventEmitter.emit('showToast', '显示缓存的本地数据')
         console.log('显示本地缓存数据')
+
+        // 强制刷新  在items不存在的情况下   或者 result日期过期 强制刷新
+        if(!items||isRefresh&&result && result.update_date && !this.dataRepository.checkDate(result.update_date)){
+          return this.dataRepository.fetchNetRepository(url);
+        }
         return items;
       }
     }).then(items => {
       if (!items && items.length == 0) {
         return;
       }
-      this.setState({
+      this.updateState({
         dataSource: items
       })
     }).catch(error => {
         alert(error.message)
-        this.setState({
+        this.updateState({
           isLoading: false
         });
       }
@@ -154,14 +231,14 @@ class PopularTab extends Component {
 
   }
 
-  // 点击的RepositoryCell的时候 调用方法
+  // 点击的TrendingCell的时候 调用方法
   onSelect(item) {
     this.props.navigation.navigate('RepositoryDetail', {item})
   }
 
   _renderItem({item, index}) {
     return (
-      <RepositoryCell item={item} onSelect={this.onSelect.bind(this, item)}/>
+      <TrendingCell item={item} onSelect={this.onSelect.bind(this, item)}/>
     )
   }
 
@@ -176,13 +253,7 @@ class PopularTab extends Component {
 
   //此函数用于为给定的item生成一个不重复的key
   _keyExtractor(item, index) {
-    return item.id;
-  }
-
-  _onRefresh() {
-    //alert('下拉刷新')
-    this.setState({isLoading: true})
-    this.loadData()
+    return index;
   }
 
   render() {
@@ -207,12 +278,16 @@ class PopularTab extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1
+  },
+  button: {
+  },
+  buttonText: {
   }
 })
 
-const PopularPageNavigation = StackNavigator({
-  PopularPage: {
-    screen: PopularPage,
+const TrendingPageNavigation = StackNavigator({
+  TrendingPage: {
+    screen: TrendingPage,
     navigationOptions: {
       header: null
     }
@@ -225,4 +300,4 @@ const PopularPageNavigation = StackNavigator({
   }
 })
 
-export default PopularPageNavigation
+export default TrendingPageNavigation

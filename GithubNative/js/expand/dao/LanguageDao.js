@@ -4,7 +4,8 @@ import {
   AsyncStorage,
 } from 'react-native'
 
-import keys from '../../../res/data/keys.json'
+import keysData from '../../../res/data/keys.json'
+import langsData from '../../../res/data/langs.json'
 
 export var FLAG_LANGUAGE = {
   flag_language: 'flag_language_language',
@@ -30,8 +31,8 @@ export default class LanguageDao {
       //     }
       //   } else {
       //     // 如果flag在数据库中不存在的话  即第一次需要定义  name就给其默认数据
-      //     // var data = this.flag === FLAG_LANGUAGE.flag_key ? keys: null
-      //     var data = this.flag === FLAG_LANGUAGE.flag_key ? keys: null
+      //     // var data = this.flag === FLAG_LANGUAGE.flag_key ? keysData: null
+      //     var data = this.flag === FLAG_LANGUAGE.flag_key ? keysData: null
       //     console.log('save data', data)
       //     this.save(data); // 将数据保存到数据库中
       //     resolve(data)
@@ -56,8 +57,8 @@ export default class LanguageDao {
             }
           } else {
             // 如果flag在数据库中不存在的话  即第一次需要定义  name就给其默认数据
-            // var data = this.flag === FLAG_LANGUAGE.flag_key ? keys: null
-            var data = this.flag === FLAG_LANGUAGE.flag_key ? keys : null
+            // var data = this.flag === FLAG_LANGUAGE.flag_key ? keysData: null
+            var data = this.flag === FLAG_LANGUAGE.flag_key ? keysData : langsData
             this.save(data); // 将数据保存到数据库中
             resolve(data)
           }

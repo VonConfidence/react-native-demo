@@ -18,6 +18,8 @@ import {
   StackNavigator
 } from 'react-navigation'
 
+import {FLAG_LANGUAGE} from '../../expand/dao/LanguageDao'
+
 class MyPage extends Component {
   constructor(props) {
     super(props)
@@ -31,18 +33,27 @@ class MyPage extends Component {
           style={{backgroundColor: "#6495ED"}}
         />
         <Text style={styles.tips}
-          onPress={()=> navigate('CustomKeyPage', {isRemoveKey:false})}
+          onPress={()=> navigate('CustomKeyPage', {isRemoveKey:false, flag:FLAG_LANGUAGE.flag_key})}
           >自定义标签
         </Text>
 
         <Text style={styles.tips}
-              onPress={()=> navigate('SortKeyPage')}
+              onPress={()=> navigate('SortKeyPage', {flag: FLAG_LANGUAGE.flag_key})}
         >标签排序页
         </Text>
 
         <Text style={styles.tips}
               onPress={()=> navigate('CustomKeyPage', {isRemoveKey:true})}
         >标签移出
+        </Text>
+
+        <Text style={styles.tips}
+              onPress={()=> navigate('CustomKeyPage', {isRemoveKey:false, flag:FLAG_LANGUAGE.flag_language})}
+        >自定义语言
+        </Text>
+        <Text style={styles.tips}
+              onPress={()=> navigate('SortKeyPage', {flag: FLAG_LANGUAGE.flag_language})}
+        >语言排序页
         </Text>
       </View>
     )

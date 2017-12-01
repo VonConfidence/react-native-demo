@@ -3,47 +3,74 @@ import {
   AsyncStorage
 } from 'react-native'
 
+import GitHubTrending from 'GitHubTrending'
+
+export const FLAG_STORAGE = {flag_popular: 'popular', flag_trending: 'trending'}
+
 export default class DataRepository {
+  constructor(flag) {
+    this.flag = flag;
+    if (flag === FLAG_STORAGE.flag_trending) {
+      this.trending = new GitHubTrending();
+    }
+  }
 
   // 获取网路数据
   fetchPopularRepository(url) {
-    return new Promise((resolve, reject) => {
-      fetch(url)
-        .then(response => response.json())
-        .then(result => {
-          // 获取成功的话 在本地缓存一份
-          if (!result) { // 获取数据为空的话
-            reject(new Error('response data is null'))
-            return ;
+    if (this.flag === FLAG_STORAGE.flag_trending) {
+      return new Promise((resolve, reject)=> {
+        // 是trending模块在进行调用
+        this.trending.fetchTrending(url).then(result => {
+          if (!result) {
+            reject(new Error('responseData is null'))
+            return;
           }
-          resolve(result.items);
-          this.saveRepository(url, result.items)
+          // 将数据保存到本地
+          this.saveRepository(url, result);
+          resolve(result)
         })
-        .catch(error => reject(error));
-    })
+      })
+    } else {
+      // 是popular模块在进行调用
+      return new Promise((resolve, reject) => {
+        fetch(url)
+          .then(response => response.json())
+          .then(result => {
+            // 获取成功的话 在本地缓存一份
+            if (!result) { // 获取数据为空的话
+              reject(new Error('response data is null'))
+              return;
+            }
+            resolve(result.items);
+            this.saveRepository(url, result.items)
+          })
+          .catch(error => reject(error));
+      })
+    }
+
   }
 
   // 获取数据  网络数据/本地缓存数据
   fetchRepository(url) {
     return new Promise((resolve, reject) => {
       // 首先会获取本地的数据
-      this.fetchLocalRepository(url).then(wrapData=> {
+      this.fetchLocalRepository(url).then(wrapData => {
         if (wrapData) {
           console.log('获取本地数据成功....')
           resolve(wrapData)
         } else {
           // 如果本地没有数据的话 获取网络数据
-          this.fetchPopularRepository(url).then(data=> {
+          this.fetchPopularRepository(url).then(data => {
             console.log('本地数据不存在, 获取网络数据....')
             resolve(data)
-          }).catch(error=> reject(error))
+          }).catch(error => reject(error))
         }
-      }).catch(e=> {
+      }).catch(e => {
         // 获取本地数据出问题的话 获取网络数据
-        this.fetchPopularRepository(url).then(result=> {
+        this.fetchPopularRepository(url).then(result => {
           console.log('本地数据失败, 获取网络数据...', e.message)
           resolve(result)
-        }).catch(error=> reject(error))
+        }).catch(error => reject(error))
 
       })
     })
@@ -56,7 +83,7 @@ export default class DataRepository {
    */
   fetchLocalRepository(url) {
     return new Promise((resolve, reject) => {
-      AsyncStorage.getItem(url, (error, result)=> {
+      AsyncStorage.getItem(url, (error, result) => {
         if (!error) {
           try {
             resolve(JSON.parse(result))
@@ -72,7 +99,7 @@ export default class DataRepository {
 
   saveRepository(url, items, callback) {
     if (!url || !items) {
-      return ;
+      return;
     }
     let wrapData = {
       items,

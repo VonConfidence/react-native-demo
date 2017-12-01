@@ -23,15 +23,18 @@ import CheckBox from 'react-native-check-box'
 export default class CustomKeyPage extends Component {
   constructor(props) {
     super(props)
-    this.languageDao = new LanguageDao(FLAG_LANGUAGE.flag_key)
+
     this.changeValues = []; // 保存用户所做的修改
-    console.log(this.props.navigation)
+    // console.log(this.props.navigation)
     this.isRemoveKey = this.props.navigation.state.params.isRemoveKey?true:false
+    this.flag = this.props.navigation.state.params.flag
+    this.languageDao = new LanguageDao(this.props.navigation.state.params.flag)
     this.state = {
       dataArray: [],
     }
   }
   componentDidMount() {
+    // 根据传递的参数的不同加载不同的数据 FLAG_LANGUAGE
     this._loadData()
   }
   _onBack() {
@@ -104,14 +107,14 @@ export default class CustomKeyPage extends Component {
   _renderCheckBox(data) {
     let leftText = data.name;
     return (
-      <CheckBox
-        style={{flex:1, padding : 10}}
-        onClick={()=>this._onCheckBoxClick(data)}
-        leftText={leftText}
-        isChecked={this.isRemoveKey?false:data.checked}
-        checkedImage={<Image source={require('./images/ic_check_box.png')} style={{tintColor: '#6495ED'}}  />}
-        unCheckedImage={<Image source={require('./images/ic_check_box_outline_blank.png')} style={{tintColor: '#6495ED'}} />  }
-      />
+        <CheckBox
+          style={{flex:1, padding : 10}}
+          onClick={()=>this._onCheckBoxClick(data)}
+          leftText={leftText}
+          isChecked={this.isRemoveKey?false:data.checked}
+          checkedImage={<Image source={require('./images/ic_check_box.png')} style={{tintColor: '#6495ED'}}  />}
+          unCheckedImage={<Image source={require('./images/ic_check_box_outline_blank.png')} style={{tintColor: '#6495ED'}} />  }
+        />
     )
   }
   _renderTagView() {
@@ -145,6 +148,7 @@ export default class CustomKeyPage extends Component {
   }
   render() {
     let title = this.isRemoveKey? '标签移除': '自定义标签';
+    title = this.flag === FLAG_LANGUAGE.flag_language? '自定义语言':title;
     let rightButtonTitle = this.isRemoveKey? '移除': '保存'
     let rightButton = <TouchableOpacity onPress={this._onSave.bind(this)}>
       <View style={{margin: 10}}>

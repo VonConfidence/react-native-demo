@@ -38,11 +38,12 @@
     - [react-native-check-box](https://github.com/crazycodeboy/react-native-check-box)
     - react-native-easy-toast  (toast提示框)
     - react-native-splash-screen (启动屏)
-    - react-native-htmlview (html渲染)
+    - [react-native-htmlview](https://github.com/jsdf/react-native-htmlview) html渲染
     - [react-native-scrollable-tab-view](https://github.com/skv-headless/react-native-scrollable-tab-view) (标签切换)
     - reat-native-sortable-listview [列表排序](https://github.com/mozillo/react-native-sortable-listview)
     - react-native-tab-navigator(底部导航)(https://github.com/happypancake/react-native-tab-navigator)
     - react-native-parallax-scroll-view(视差滚动)
+    - [react-native-popover](https://github.com/jeanregisser/react-native-popover) 弹窗
     - 分享SDK
 11. 自定义组件
     - NavigationBar
