@@ -22,8 +22,8 @@ export default class RepositoryDetail extends Component<> {
   constructor(props) {
     super(props);
     // 适配popularPage 和 trendingPage
-    this.url = this.props.navigation.state.params.item.html_url?this.props.navigation.state.params.item.html_url:TRENDING_URL+ this.props.navigation.state.params.item.fullName;
-    this.title = this.props.navigation.state.params.item.full_name ? this.props.navigation.state.params.item.full_name : this.props.navigation.state.params.item.fullName;
+    this.url = this.props.navigation.state.params.projectModel.item.html_url?this.props.navigation.state.params.projectModel.item.html_url:TRENDING_URL+ this.props.navigation.state.params.item.fullName;
+    this.title = this.props.navigation.state.params.projectModel.item.full_name ? this.props.navigation.state.params.projectModel.item.full_name : this.props.navigation.state.params.item.fullName;
     this.state = {
       url: this.url,
       title: this.title,

@@ -11,10 +11,34 @@ import {
 export default class RepositoryCell extends Component {
   constructor(props) {
     super(props)
+    this.state = {
+      isFavorite: this.props.projectModel.isFavorite,
+      favoriteIcon: this.props.projectModel.isFavorite?require('../../res/images/ic_star.png'): require('../../res/images/ic_unstar_transparent.png')
+    }
   }
-
+  componentWillReceiveProps(nextProps) {
+    this.setFavoriteState(nextProps.projectModel.isFavorite)
+  }
+  // 点击收藏按钮
+  onPressFavorite() {
+    this.setFavoriteState(!this.state.isFavorite)
+    this.props.onFavorite(this.props.projectModel.item, !this.state.isFavorite)
+  }
+  setFavoriteState(isFavorite) {
+    this.setState({
+      isFavorite,
+      favoriteIcon: isFavorite? require('../../res/images/ic_star.png') : require('../../res/images/ic_unstar_transparent.png')
+    })
+  }
   render() {
-    const {item} = this.props;
+    const item = this.props.item?this.props.item: this.props.projectModel.item;
+    // 收藏的按钮
+    const favoriteButton = <TouchableOpacity onPress={this.onPressFavorite.bind(this)}>
+      <Image
+        source={this.state.favoriteIcon}
+        style={{width: 22, height: 22, tintColor: '#2196f3'}}
+      />
+    </TouchableOpacity>
     return (
       <TouchableOpacity style={styles.container} onPress={this.props.onSelect}>
         <View style={styles.cell_container}>
@@ -31,10 +55,7 @@ export default class RepositoryCell extends Component {
               <Text>{item.stargazers_count}</Text>
             </View>
 
-            <Image
-              source={require('../../res/images/ic_star.png')}
-              style={{width: 22, height: 22}}
-            />
+            {favoriteButton}
 
           </View>
         </View>

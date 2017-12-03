@@ -25,6 +25,11 @@ import TimeSpan from '../model/TimeSpan'
 
 import Popover from '../common/Popover'
 
+import FavoriteDao from '../expand/dao/FavoriteDao'
+import ProjectModel from "../model/ProjectModel";
+
+import Utils from '../util/Utils'
+
 const API_URL = 'https://github.com/trending/';
 
 let timeSpanTextArray = [
@@ -32,6 +37,10 @@ let timeSpanTextArray = [
   new TimeSpan('本 周', 'since=weekly'),
   new TimeSpan('本 月', 'since=monthly')
 ]
+
+const favoriteDao = new FavoriteDao(FLAG_STORAGE.flag_trending)
+// 从trending模块下面读取数据
+const dataRepository = new DataRepository(FLAG_STORAGE.flag_trending)
 
 class TrendingPage extends Component {
   constructor(props) {
@@ -153,16 +162,17 @@ class TrendingPage extends Component {
 class TrendingTab extends Component {
   constructor(props) {
     super(props)
-    // 从trending模块下面读取数据
-    this.dataRepository = new DataRepository(FLAG_STORAGE.flag_trending)
+
     this.state = {
       text: '',
       dataSource: [],
-      isLoading: false
+      isLoading: false,
+      favoriteKeys: []
     }
   }
   updateState(dic) {
     if (!this) return;
+    this.isRender = true;
     this.setState(dic);
   }
   genFetchUrl(timeSpan, category) {
@@ -178,24 +188,56 @@ class TrendingTab extends Component {
       this.loadData(nextProps.timeSpan, true)
     }
   }
-
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   if (this.isRender) {
+  //     this.isRender = false;
+  //     return true;
+  //   } else {
+  //     return false;
+  //   }
+  // }
   _onRefresh() {
     //alert('下拉刷新')
     this.setState({isLoading: true})
     this.loadData(this.props.timeSpan, true)
   }
-
+  // 能够更新project Item每一项收藏的状态
+  flushFavoriteState() {
+    let projectModels = [];
+    let items = this.items;
+    for (var i = 0; i < items.length; i ++) {
+      projectModels.push(new ProjectModel(items[i], Utils.checkFavorite(items[i], this.state.favoriteKeys)))
+    }
+    this.updateState({
+      isLoading:false,
+      dataSource: projectModels
+    })
+  }
+  getFavoriteKeys() {
+    favoriteDao.getFavoriteKeys().then(keys=> {
+      if (keys) {
+        this.updateState({favoriteKeys:keys})
+        // alert('--keys--'+JSON.stringify(keys))
+      }
+      this.flushFavoriteState()
+    }).catch(error=> {
+      alert(error.message)
+      this.flushFavoriteState()
+    })
+  }
   loadData(timeSpan, isRefresh) {
     this.updateState({isLoading: true})
     let url = this.genFetchUrl(timeSpan,this.props.tabLabel);
     // alert(url);
-    this.dataRepository.fetchRepository(url).then(result => {
+    dataRepository.fetchRepository(url).then(result => {
       console.log('result', result) //  网络数据: result.items  本地数据result
       // console.log(url)
       let items = result && result.items ? result.items : result ? result : [];
+      this.items = items;
       console.log('items', items)
-      this.setState({dataSource: items, isLoading: false})
-      if (result && result.update_date && !this.dataRepository.checkDate(result.update_date)) {
+      // this.setState({dataSource: items, isLoading: false})
+      this.getFavoriteKeys();
+      if (result && result.update_date && !dataRepository.checkDate(result.update_date)) {
         DeviceEventEmitter.emit('showToast', '数据过时')
         console.log('数据过时')
         // 表明数据过时 从网络上获取数据
@@ -203,14 +245,14 @@ class TrendingTab extends Component {
           DeviceEventEmitter.emit('showToast', '显示网络数据')
           console.log('显示网络数据')
         }, 1000)
-        return this.dataRepository.fetchPopularRepository(url);
+        return dataRepository.fetchPopularRepository(url);
       } else {
         DeviceEventEmitter.emit('showToast', '显示缓存的本地数据')
         console.log('显示本地缓存数据')
 
         // 强制刷新  在items不存在的情况下   或者 result日期过期 强制刷新
-        if(!items||isRefresh&&result && result.update_date && !this.dataRepository.checkDate(result.update_date)){
-          return this.dataRepository.fetchNetRepository(url);
+        if(!items||isRefresh&&result && result.update_date && !dataRepository.checkDate(result.update_date)){
+          return dataRepository.fetchNetRepository(url);
         }
         return items;
       }
@@ -218,9 +260,11 @@ class TrendingTab extends Component {
       if (!items && items.length == 0) {
         return;
       }
-      this.updateState({
-        dataSource: items
-      })
+      this.items = items;
+      this.getFavoriteKeys();
+      // this.updateState({
+      //   dataSource: items
+      // })
     }).catch(error => {
         alert(error.message)
         this.updateState({
@@ -232,13 +276,17 @@ class TrendingTab extends Component {
   }
 
   // 点击的TrendingCell的时候 调用方法
-  onSelect(item) {
-    this.props.navigation.navigate('RepositoryDetail', {item})
+  onSelect(projectModel) {
+    this.props.navigation.navigate('RepositoryDetail', {projectModel})
   }
 
   _renderItem({item, index}) {
+    let projectModel = item;
     return (
-      <TrendingCell item={item} onSelect={this.onSelect.bind(this, item)}/>
+      <TrendingCell
+        projectModel={projectModel}
+        onSelect={this.onSelect.bind(this, projectModel)}
+        onFavorite={this.onFavorite.bind(this)}/>
     )
   }
 
@@ -253,7 +301,18 @@ class TrendingTab extends Component {
 
   //此函数用于为给定的item生成一个不重复的key
   _keyExtractor(item, index) {
-    return index;
+    let projectModel = item;
+    return projectModel.item.fullName + index;
+  }
+
+  // 用户点击FavoriteIcon的时候改变用户的收藏状态
+  onFavorite(item, isFavorite) {
+    //处理一些数据库的操作
+    if (isFavorite) {
+      favoriteDao.saveFavoriteItem(item.fullName, JSON.stringify(item))
+    } else { // 用户取消收藏
+      favoriteDao.removeFavoriteItem(item.fullName)
+    }
   }
 
   render() {

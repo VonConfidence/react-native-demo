@@ -22,9 +22,15 @@ import NavigationBar from '../common/NavigationBar'
 import DataRepository, {FLAG_STORAGE} from '../expand/dao/DataRepository'
 
 import LanguageDao, {FLAG_LANGUAGE} from '../expand/dao/LanguageDao'
+import FavoriteDao from '../expand/dao/FavoriteDao'
+import ProjectModel from "../model/ProjectModel";
+
+import Utils from '../util/Utils'
 
 const URL = 'https://api.github.com/search/repositories?q=';
 const QUERY_STR = '&sort=stars';
+
+const favoriteDao = new FavoriteDao(FLAG_STORAGE.flag_popular)
 
 class PopularPage extends Component {
   constructor(props) {
@@ -102,7 +108,8 @@ class PopularTab extends Component {
     this.state = {
       text: '',
       dataSource: [],
-      isLoading: false
+      isLoading: false,
+      favoriteKeys: []
     }
   }
 
@@ -113,7 +120,34 @@ class PopularTab extends Component {
   componentDidMount() {
     this.loadData()
   }
-
+  // 能够更新project Item每一项收藏的状态
+  flushFavoriteState() {
+    let projectModels = [];
+    let items = this.items;
+    for (var i = 0; i < items.length; i ++) {
+      projectModels.push(new ProjectModel(items[i], Utils.checkFavorite(items[i], this.state.favoriteKeys)))
+    }
+    this.updateState({
+      isLoading:false,
+      dataSource: projectModels
+    })
+  }
+  updateState(dic) {
+    if (!this) return;
+    this.setState(dic)
+  }
+  getFavoriteKeys() {
+    favoriteDao.getFavoriteKeys().then(keys=> {
+      if (keys) {
+        this.updateState({favoriteKeys:keys})
+        // alert('--keys--'+JSON.stringify(keys))
+      }
+      this.flushFavoriteState()
+    }).catch(error=> {
+      alert(error.message)
+      this.flushFavoriteState()
+    })
+  }
   loadData() {
     this.setState({isLoading: true})
     let url = this.genFetchUrl(this.props.tabLabel);
@@ -121,8 +155,11 @@ class PopularTab extends Component {
       console.log('result', result) //  网络数据: result.items  本地数据result
       // console.log(url)
       let items = result && result.items ? result.items : result ? result : [];
+      this.items = items;
       console.log('items', items)
-      this.setState({dataSource: items, isLoading: false})
+      // this.setState({dataSource: items, isLoading: false})
+      // this.flushFavoriteState()
+      this.getFavoriteKeys()
       if (result && result.update_date && !this.dataRepository.checkDate(result.update_date)) {
         DeviceEventEmitter.emit('showToast', '数据过时')
         console.log('数据过时')
@@ -141,27 +178,44 @@ class PopularTab extends Component {
       if (!items && items.length == 0) {
         return;
       }
-      this.setState({
-        dataSource: items
-      })
+      this.items = items;
+      this.getFavoriteKeys()
+      // this.flushFavoriteState()
+      // this.setState({
+      //   dataSource: items
+      // })
     }).catch(error => {
-        alert(error.message)
-        this.setState({
+        alert('PopularPage: '+error.message)
+        this.updateState({
           isLoading: false
-        });
+        })
+        // this.setState({
+        //   isLoading: false
+        // });
       }
     )
 
   }
 
   // 点击的RepositoryCell的时候 调用方法
-  onSelect(item) {
-    this.props.navigation.navigate('RepositoryDetail', {item})
+  onSelect(projectModel) {
+    this.props.navigation.navigate('RepositoryDetail', {projectModel: projectModel})
   }
-
+  // 用户点击FavoriteIcon的时候改变用户的收藏状态
+  onFavorite(item, isFavorite) {
+    //处理一些数据库的操作
+    if (isFavorite) {
+      favoriteDao.saveFavoriteItem(item.id.toString(), JSON.stringify(item))
+    } else { // 用户取消收藏
+      favoriteDao.removeFavoriteItem(item.id.toString())
+    }
+  }
   _renderItem({item, index}) {
+    var projectModel = item;
     return (
-      <RepositoryCell item={item} onSelect={this.onSelect.bind(this, item)}/>
+      <RepositoryCell projectModel={projectModel} onSelect={this.onSelect.bind(this, projectModel)}
+      onFavorite={this.onFavorite.bind(this)}
+      />
     )
   }
 
@@ -175,8 +229,8 @@ class PopularTab extends Component {
   }
 
   //此函数用于为给定的item生成一个不重复的key
-  _keyExtractor(item, index) {
-    return item.id;
+  _keyExtractor(projectModel, index) {
+    return projectModel.item.id;
   }
 
   _onRefresh() {
