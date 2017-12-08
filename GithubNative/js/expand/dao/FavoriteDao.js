@@ -4,12 +4,9 @@ import {
   AsyncStorage,
 } from 'react-native'
 
-import keysData from '../../../res/data/keys.json'
-import langsData from '../../../res/data/langs.json'
-
 const FAVORITE_KEY_PREFIX = 'favorite_'
 
-export default class LanguageDao {
+export default class FavoriteDao {
   constructor(flag) {
     this.flag = flag;
     this.favoriteKey = FAVORITE_KEY_PREFIX + flag;
@@ -22,6 +19,7 @@ export default class LanguageDao {
    * @param callback 回调函数
    */
   saveFavoriteItem(key, value, callback) {
+    console.log('收藏项目: ',this.favoriteKey ,key, value)
     AsyncStorage.setItem(key, value, (error) => {
       // alert('key:'+key+ ',value:'+value)
       if (!error) {
@@ -44,7 +42,7 @@ export default class LanguageDao {
         if (result) {
           // 如果数据库中已经存在
           favoriteKeys = JSON.parse(result)
-          console.log('favoriteKeys :'+favoriteKeys)
+          // console.log('favoriteKeys :'+favoriteKeys)
         }
         var index = favoriteKeys.indexOf(key)
         if (isAdd) {
@@ -56,7 +54,7 @@ export default class LanguageDao {
             favoriteKeys.splice(index, 1)
           }
         }
-        console.log('setItem', this.favoriteKey, JSON.stringify(favoriteKeys))
+        console.log('FavoriteDao:setItem', this.favoriteKey, JSON.stringify(favoriteKeys))
         AsyncStorage.setItem(this.favoriteKey, JSON.stringify(favoriteKeys))
       }
     })
@@ -79,11 +77,14 @@ export default class LanguageDao {
    * @returns {Promise}
    */
   getFavoriteKeys() {
+    // alert(this.favoriteKey)
+    console.log('FavoriteDao: getFavoriteKeys ', this.favoriteKey)
     return new Promise((resolve, reject)=> {
       AsyncStorage.getItem(this.favoriteKey, (error,result)=> {
         if (!error) {
           try {
             // alert(result)
+            // console.log('favorite_keys:', result)
             resolve(JSON.parse(result))
           } catch (e) {
             reject(e)
@@ -91,6 +92,38 @@ export default class LanguageDao {
         } else {
           reject(error)
         }
+      })
+    })
+  }
+
+  /**
+   * 获取用户所收藏的项目
+   */
+  getAllItems() {
+    return new Promise((resolve, reject)=> {
+      this.getFavoriteKeys().then(keys=> {
+        var items = [];
+        if (keys) {
+          AsyncStorage.multiGet(keys, (err, stores)=> {
+            try {
+              stores.map((result, index, store)=>{
+                let value = store[index][1];
+                if (value) {
+                  items.push(JSON.parse(value))
+                }
+              })
+              resolve(items)
+            }
+            catch (e) {
+              reject(e)
+            }
+
+          })
+        } else { // key 为空的情况下
+          resolve(items)
+        }
+      }).catch(error=> {
+        reject(error)
       })
     })
   }

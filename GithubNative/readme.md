@@ -1,5 +1,7 @@
 # Github 项目实现
-
+## React & Native 版本
++ "react": "16.0.0"
++ "react-native": "0.50.3",
 ## 软件开发流程
 1. UI界面设计
 2. 需求分析
@@ -32,9 +34,10 @@
 5. FlexBox   布局方案
 6. AsyncStorage 数据存储
 7. Fetch 网络数据
-8. NativeModules 原生模块
+8. NativeModules 原生模块(FlatList)
 9. Android&iOS
 10. 第三方库的使用
+    - react-navigation
     - [react-native-check-box](https://github.com/crazycodeboy/react-native-check-box)
     - react-native-easy-toast  (toast提示框)
     - react-native-splash-screen (启动屏)
@@ -42,7 +45,7 @@
     - [react-native-scrollable-tab-view](https://github.com/skv-headless/react-native-scrollable-tab-view) (标签切换)
     - reat-native-sortable-listview [列表排序](https://github.com/mozillo/react-native-sortable-listview)
     - react-native-tab-navigator(底部导航)(https://github.com/happypancake/react-native-tab-navigator)
-    - react-native-parallax-scroll-view(视差滚动)
+    - [react-native-parallax-scroll-view](https://github.com/i6mi6/react-native-parallax-scroll-view) 视差滚动
     - [react-native-popover](https://github.com/jeanregisser/react-native-popover) 弹窗
     - 分享SDK
 11. 自定义组件

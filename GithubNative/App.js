@@ -24,7 +24,8 @@ import { StackNavigator } from 'react-navigation';
 import PopularPage from "./js/page/PopularPage"
 import TrendingPage from './js/page/TrendingPage'
 import MyPage from './js/page/My/MyPage'
-import WebViewTest from './js/common/WebViewTest'
+// import WebViewTest from './js/common/WebViewTest'
+import FavoritePage from './js/page/FavoritePage'
 
 // Test Page
 // import BoyComponent from './js/common/Boy'
@@ -87,7 +88,7 @@ export default class App extends Component<> {
         <TabNavigator>
           {this._renderTab(PopularPage, 'tb_popular', '最热', require('./res/images/ic_popular.png') )}
           {this._renderTab(TrendingPage, 'tb_trending', '趋势', require('./res/images/ic_trending.png') )}
-          {this._renderTab(WebViewTest, 'tb_favorite', '收藏', require('./res/images/ic_favorite.png') )}
+          {this._renderTab(FavoritePage, 'tb_favorite', '收藏', require('./res/images/ic_favorite.png') )}
           {this._renderTab(MyPage, 'tb_my', '我的', require('./res/images/ic_my.png') )}
           {/*
           <TabNavigator.Item

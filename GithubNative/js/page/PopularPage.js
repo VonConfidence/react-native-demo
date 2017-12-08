@@ -111,6 +111,8 @@ class PopularTab extends Component {
       isLoading: false,
       favoriteKeys: []
     }
+
+    this.isFavoriteChanged = false;
   }
 
   genFetchUrl(key) {
@@ -119,6 +121,22 @@ class PopularTab extends Component {
 
   componentDidMount() {
     this.loadData()
+
+    // 注册通知 更新收藏状态
+    this.listener = DeviceEventEmitter.addListener('favoriteChanged_popular', ()=> {
+      this.isFavoriteChanged = true;
+    })
+  }
+  componentWillUnmount() {
+    if (this.listener) {
+      this.listener.remove()
+    }
+  }
+  componentWillReceiveProps() {
+    if (this.isFavoriteChanged) {
+      this.isFavoriteChanged = false;
+      this.getFavoriteKeys()
+    }
   }
   // 能够更新project Item每一项收藏的状态
   flushFavoriteState() {
@@ -199,7 +217,7 @@ class PopularTab extends Component {
 
   // 点击的RepositoryCell的时候 调用方法
   onSelect(projectModel) {
-    this.props.navigation.navigate('RepositoryDetail', {projectModel: projectModel})
+    this.props.navigation.navigate('RepositoryDetail', {projectModel: projectModel, flag: FLAG_STORAGE.flag_popular})
   }
   // 用户点击FavoriteIcon的时候改变用户的收藏状态
   onFavorite(item, isFavorite) {

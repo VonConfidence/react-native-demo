@@ -162,12 +162,13 @@ class TrendingPage extends Component {
 class TrendingTab extends Component {
   constructor(props) {
     super(props)
-
+    this.isRender = true;
+    this.isFavoriteChanged = false;
     this.state = {
       text: '',
       dataSource: [],
       isLoading: false,
-      favoriteKeys: []
+      favoriteKeys: [],
     }
   }
   updateState(dic) {
@@ -181,21 +182,39 @@ class TrendingTab extends Component {
 
   componentDidMount() {
     this.loadData(this.props.timeSpan, true)
+
+    // 注册通知 更新收藏状态
+    this.listener = DeviceEventEmitter.addListener('favoriteChanged_trending', ()=> {
+      this.isFavoriteChanged = true;
+    })
   }
 
   componentWillReceiveProps(nextProps) {
+    console.log('TrendingPage: willReceiveProps: ')
+    console.log(nextProps)
     if (nextProps.timeSpan !== this.props.timeSpan) {
       this.loadData(nextProps.timeSpan, true)
     }
+
+    if (this.isFavoriteChanged) {
+      this.isFavoriteChanged = false;
+      this.getFavoriteKeys()
+    }
   }
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   if (this.isRender) {
-  //     this.isRender = false;
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // }
+  componentWillUnmount() {
+    if (this.listener) {
+      this.listener.remove()
+    }
+  }
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.isRender) {
+      this.isRender = false;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   _onRefresh() {
     //alert('下拉刷新')
     this.setState({isLoading: true})
@@ -277,7 +296,7 @@ class TrendingTab extends Component {
 
   // 点击的TrendingCell的时候 调用方法
   onSelect(projectModel) {
-    this.props.navigation.navigate('RepositoryDetail', {projectModel})
+    this.props.navigation.navigate('RepositoryDetail', {projectModel, flag: FLAG_STORAGE.flag_trending})
   }
 
   _renderItem({item, index}) {

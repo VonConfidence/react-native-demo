@@ -5,7 +5,7 @@ import {
 
 import GitHubTrending from 'GitHubTrending'
 
-export const FLAG_STORAGE = {flag_popular: 'popular', flag_trending: 'trending'}
+export const FLAG_STORAGE = {flag_popular: 'popular', flag_trending: 'trending', flag_my: 'flag_my'}
 
 export default class DataRepository {
   constructor(flag) {
@@ -18,7 +18,7 @@ export default class DataRepository {
   // 获取网路数据
   fetchPopularRepository(url) {
     if (this.flag === FLAG_STORAGE.flag_trending) {
-      return new Promise((resolve, reject)=> {
+      return new Promise((resolve, reject) => {
         // 是trending模块在进行调用
         this.trending.fetchTrending(url).then(result => {
           if (!result) {
@@ -31,6 +31,7 @@ export default class DataRepository {
         })
       })
     } else {
+      // 区分是popular还是my
       // 是popular模块在进行调用
       return new Promise((resolve, reject) => {
         fetch(url)
@@ -41,8 +42,18 @@ export default class DataRepository {
               reject(new Error('response data is null'))
               return;
             }
-            resolve(result.items);
-            this.saveRepository(url, result.items)
+            // 是 myAboutCommont模块的数据
+            if (this.flag === FLAG_STORAGE.flag_my) {
+              console.log('save:', url, result)
+              this.saveRepository(url, result)
+            } else if (result && result.items) {
+              // 是popular 模块的数据
+              this.saveRepository(url, result.items)
+              resolve(result.items);
+            } else {
+              reject(new Error('response data is null'))
+            }
+
           })
           .catch(error => reject(error));
       })
@@ -105,6 +116,10 @@ export default class DataRepository {
       items,
       update_date: new Date().getTime(),
     }
+    if (this.flag === FLAG_STORAGE.flag_my) {
+      wrapData = {item: items, update_date: new Date().getTime()}
+    }
+
     AsyncStorage.setItem(url, JSON.stringify(wrapData), callback)
   }
 
